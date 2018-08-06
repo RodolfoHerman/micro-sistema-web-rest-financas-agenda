@@ -17,7 +17,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+
+import org.springframework.format.annotation.NumberFormat;
 
 import br.com.rodolfo.api.enums.TipoEnum;
 
@@ -38,13 +42,23 @@ public class Conta implements Serializable {
     private String descricao;
 
     @Column(name = "valor_fatura", nullable = false)
+    @NumberFormat(pattern = "#,##0.00")
     private BigDecimal valorFatura;
 
     @Column(name = "valor_pagamento")
+    @NumberFormat(pattern = "#,##0.00")
     private BigDecimal valorPagamento;
 
+    @Column(name = "data_vencimento", nullable = false)
+    @Temporal(TemporalType.DATE)
+    private Date dataVencimento;
+
+    @Column(name = "data_pagamento")
+    @Temporal(TemporalType.DATE)
+    private Date dataPagamento;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado")
+    @Column(name = "tipo", nullable = false)
     private TipoEnum tipo;
 
     @Column(name = "data_criacao", nullable = false)
@@ -118,6 +132,34 @@ public class Conta implements Serializable {
      */
     public void setValorPagamento(BigDecimal valorPagamento) {
         this.valorPagamento = valorPagamento;
+    }
+
+    /**
+     * @return Date return the dataVencimento
+     */
+    public Date getDataVencimento() {
+        return dataVencimento;
+    }
+
+    /**
+     * @param dataVencimento the dataVencimento to set
+     */
+    public void setDataVencimento(Date dataVencimento) {
+        this.dataVencimento = dataVencimento;
+    }
+
+    /**
+     * @return Date return the dataPagamento
+     */
+    public Date getDataPagamento() {
+        return dataPagamento;
+    }
+
+    /**
+     * @param dataPagamento the dataPagamento to set
+     */
+    public void setDataPagamento(Date dataPagamento) {
+        this.dataPagamento = dataPagamento;
     }
 
     /**
