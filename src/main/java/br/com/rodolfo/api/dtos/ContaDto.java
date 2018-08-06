@@ -3,6 +3,7 @@ package br.com.rodolfo.api.dtos;
 import java.util.Optional;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -21,6 +22,7 @@ public class ContaDto {
     private String valorFatura;
 
     @NotEmpty(message = "Data de vencimento deve ser informada.")
+    @Pattern(regexp = "((19|20)\\d\\d)-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])", message = "Formato da data inválido")
     private String dataVencimento;
 
     @NotEmpty(message = "O status da fatura deve ser informado")

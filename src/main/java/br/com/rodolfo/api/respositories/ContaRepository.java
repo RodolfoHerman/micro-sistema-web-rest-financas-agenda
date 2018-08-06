@@ -1,5 +1,8 @@
 package br.com.rodolfo.api.respositories;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
@@ -24,6 +27,8 @@ import br.com.rodolfo.api.models.Conta;
 public interface ContaRepository extends JpaRepository<Conta, Long> {
 
     Page<Conta> findByUsuarioEmail(@Param("usuarioEmail") String usuarioEmail, Pageable pageable);
+
+    Conta findByDescricaoIgnoreCaseAndDataVencimentoAndValorFatura(String descricao, Date dataVencimento, BigDecimal valorFatura);
 
     Page<Conta> findAll(Pageable pageable);
 }

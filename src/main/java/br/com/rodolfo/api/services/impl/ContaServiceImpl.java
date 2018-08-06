@@ -1,5 +1,9 @@
 package br.com.rodolfo.api.services.impl;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +56,23 @@ public class ContaServiceImpl implements ContaService {
         log.info("Removendo conta de id : {}", id);
 
         this.contaRepository.deleteById(id);
+	}
+
+	@Override
+	public Optional<Conta> buscarPorId(Long id) {
+                
+                log.info("Buscando conta pelo id : {}", id);
+
+                return this.contaRepository.findById(id);
+	}
+
+	@Override
+	public Optional<Conta> buscarPorDescricaoDataVencimentoValorFatura(String descricao, Date dataVencimento,
+			BigDecimal valorFatura) {
+                
+                log.info("Buscando conta pela descricao, dataVencimento e valorFatura : {}, {}, {}", descricao, dataVencimento, valorFatura);
+                
+                return Optional.ofNullable(this.contaRepository.findByDescricaoIgnoreCaseAndDataVencimentoAndValorFatura(descricao, dataVencimento, valorFatura));
 	}
 
 }

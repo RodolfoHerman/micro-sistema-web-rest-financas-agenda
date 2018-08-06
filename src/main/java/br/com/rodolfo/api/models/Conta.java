@@ -148,6 +148,11 @@ public class Conta implements Serializable {
         this.dataVencimento = dataVencimento;
     }
 
+    @Transient
+    public Optional<Date> getDataPagamentoOpt() {
+        return Optional.ofNullable(dataPagamento);
+    }
+
     /**
      * @return Date return the dataPagamento
      */
