@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -14,13 +13,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.rodolfo.api.dtos.ContaDto;
@@ -48,6 +56,33 @@ public class ContaController {
     @Value("${paginacao.qtd_por_pagina}")
     private int qtdPorPagina;
 
+    /**
+     * Método responsável por listar as contas e realizar paginação
+     * 
+     * @param pag
+     * @param ord
+     * @param dir
+     * @return ResponseEntity<Response<Page<ContaDto>>>
+     */
+    @GetMapping
+    public ResponseEntity<Response<Page<ContaDto>>> listar(
+        @RequestParam(value = "pag", defaultValue = "0") int pag,
+        @RequestParam(value = "ord", defaultValue = "id") String ord,
+        @RequestParam(value = "dir", defaultValue = "ASC") String dir
+    ) {
+        
+        log.info("Listando todas as contas.");
+
+        Response<Page<ContaDto>> response = new Response<Page<ContaDto>>();
+
+        PageRequest pageRequest = PageRequest.of(pag, this.qtdPorPagina, Direction.valueOf(dir), ord);
+        Page<Conta> contas = this.contaService.buscar(pageRequest);
+        Page<ContaDto> contasDto = contas.map(conta -> this.converterContaDto(conta));
+
+        response.setData(contasDto);
+
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * Método responsável por adiiconar conta na base de dados
@@ -81,7 +116,75 @@ public class ContaController {
 
         URI uri = URI.create("/contas/" + c.getId());
 
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.created(uri).body(response);
+    }
+    
+    /**
+     * Método responsável por remover uma conta da base de dados
+     * 
+     * @param id
+     * @param result
+     * @return ResponseEntity<Response<String>>
+     */
+    @DeleteMapping(value = "{id}")
+    public ResponseEntity<Response<String>> remover(@PathVariable("id") Long id) {
+        
+        log.info("Removendo conta com ID : {}", id);
+
+        Response<String> response = new Response<String>();
+
+        Optional<Conta> conta = this.contaService.buscarPorId(id);
+
+        if(!conta.isPresent()) {
+
+            log.error("Erro ao remover conta de ID : {} . Não encontrada", id);
+            response.getErrors().add("Erro ao remover conta. Registro não encontrado para o ID : " + id);
+
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        this.contaService.remover(id);
+        response.setData("Removido com sucesso");
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Método responsável por atualizar os dados da conta
+     * 
+     * @param id
+     * @param contaDto
+     * @param result
+     * @return ResponseEntity<Response<ContaDto>>
+     * @throws ParseException
+     */
+    @PutMapping(value = "{id}")
+    public ResponseEntity<Response<ContaDto>> atualizar(
+        @PathVariable("id") Long id,
+        @Valid @RequestBody ContaDto contaDto,
+        BindingResult result
+    ) throws ParseException {
+        
+        log.info("Atualizando conta : {}", contaDto);
+
+        Response<ContaDto> response = new Response<ContaDto>();
+
+        contaDto.setId(Optional.of(id));
+
+        Conta conta = this.converterDtoParaConta(contaDto, result);
+
+        if(result.hasErrors()) {
+
+            log.error("Erro validadndo dados de atualização da conta : {}", result.getAllErrors());
+            result.getAllErrors().forEach(error -> response.getErrors().add(error.getDefaultMessage()));
+
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        this.contaService.persistir(conta);
+        response.setData(this.converterContaDto(conta));
+
+        return ResponseEntity.ok(response);
     }
 
 
@@ -159,6 +262,11 @@ public class ContaController {
         if(EnumUtils.isValidEnum(TipoEnum.class, contaDto.getTipo())) {
 
             c.setTipo(TipoEnum.valueOf(contaDto.getTipo()));
+
+            if(contaDto.getTipo().equals("QUITADA") && (!contaDto.getDataPagamento().isPresent() || !contaDto.getValorPagamento().isPresent())) {
+
+                result.addError(new ObjectError("conta", "Ao selecionar a opção 'QUITADA' é necessário informar Data e Valor de pagamento."));
+            }
 
         } else {
 

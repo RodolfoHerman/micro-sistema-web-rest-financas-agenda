@@ -69,7 +69,7 @@ public class UsuarioController {
         @RequestParam(value = "dir", defaultValue = "DESC") String dir
     ) {
         
-        log.info("Listando toso os usuários.");
+        log.info("Listando todos os usuários.");
 
         Response<Page<UsuarioDto>> response = new Response<Page<UsuarioDto>>();
 
@@ -124,7 +124,7 @@ public class UsuarioController {
      * @return ResponseEntity<Response<String>>
      */
     @DeleteMapping(value = "{id}")
-    public ResponseEntity<Response<String>> remover(@PathVariable("id") Long id, BindingResult result) {
+    public ResponseEntity<Response<String>> remover(@PathVariable("id") Long id) {
 
         log.info("Removendo usuário com ID : {}", id);
 
@@ -160,7 +160,7 @@ public class UsuarioController {
         @Valid @RequestBody UsuarioDto usuarioDto, 
         BindingResult result) {
 
-        log.info("Adicionando usuário : {}", usuarioDto);
+        log.info("Atualizando usuário : {}", usuarioDto);
 
         Response<UsuarioDto> response = new Response<UsuarioDto>();
 
