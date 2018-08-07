@@ -249,7 +249,7 @@ public class ContaController {
         c.setValorPagamento(null);
         contaDto.getValorPagamento().ifPresent(valorPagamento -> c.setValorPagamento(new BigDecimal(valorPagamento)));
         
-        conta.setDataPagamento(null);
+        c.setDataPagamento(null);
         contaDto.getDataPagamento().ifPresent(dataPagamento -> {
 			try {
 				c.setDataPagamento(this.formatter.parse(dataPagamento));
