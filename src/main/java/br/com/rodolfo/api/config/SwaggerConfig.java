@@ -24,6 +24,8 @@ public class SwaggerConfig {
     private static final Logger log = LoggerFactory.getLogger(SwaggerConfig.class);
 
     public Docket api() {
+
+        log.info("Criando a documentação da aplicação com SWAGGER");
         
         return new Docket(DocumentationType.SWAGGER_2).select()
                 .apis(RequestHandlerSelectors.basePackage("br.com.rodolfo.api.controllers"))
